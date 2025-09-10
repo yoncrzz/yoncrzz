@@ -1,18 +1,15 @@
 FROM ubuntu:22.04
 
-# Install dependencies
-RUN apt update && \
-    apt install -y software-properties-common wget curl git openssh-client tmate python3 && \
-    apt clean
+RUN apt-get update && \
+    apt-get install -y \
+    openssh-server sudo curl wget git python3 && \
+    apt-get clean
 
-# Create a dummy index page to keep the service alive
-RUN mkdir -p /app && echo "Tmate Session Running..." > /app/index.html
-WORKDIR /app
+# Crear usuario
+RUN useradd -m -s /bin/bash vps && echo "vps:vps123" | chpasswd && adduser vps sudo
 
-# Expose a fake web port to trick Railway into keeping container alive
-EXPOSE 6080
+# Configuración SSH
+RUN mkdir /var/run/sshd
+EXPOSE 22
 
-# Start a dummy Python web server to keep Railway service active
-# and start tmate session
-CMD python3 -m http.server 6080 & \
-    tmate -F
+CMD ["/usr/sbin/sshd", "-D"]
